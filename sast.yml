@@ -1,0 +1,25 @@
+name: SAST
+on:
+    workflow_dispatch:
+    schedule:
+        # we run the build every night
+        - cron: '0 0 * * *'
+
+jobs:
+    run_sast:
+        name: Build image
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Static Application Security Testing
+              run: |
+                  export GIT_BRANCH=${GITHUB_REF##*/}
+                  wget -q ${{ secrets.POLARIS_API_URL }}/api/tools/polaris_cli-linux64.zip
+                  unzip -j polaris_cli-linux64.zip -d /tmp
+                  /tmp/polaris analyze --upload-local-config
+              shell: bash
+              env:
+                  ALLOW_FAILURE: false
+                  POLARIS_API_URL: ${{ secrets.POLARIS_API_URL }}
+                  POLARIS_ACCESS_TOKEN: ${{ secrets.POLARIS_ACCESS_TOKEN }}
