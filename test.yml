@@ -1,7 +1,7 @@
 "version": "1"
 "serverUrl": "https://visma.polaris.synopsys.com"
 "project":
-  "name": "test"
+  "name": "testAdiG"
   "branch": "master"
   "revision":
     "name": "${scm.git.commit}"
