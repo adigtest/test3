@@ -1,0 +1,56 @@
+version: "1"
+project:
+  name: ${scm.git.repo}
+  # The first branch that gets submitted to polaris becomes the default branch that the security maturity index takes points from
+  #  and there's no way of changing the default branch after the fact from the UI
+  # Well - they actually fixed that in Polaris 2021.05
+  # If you are going to only do SAST scans as nightly builds, I would recommend keeping the branch fixed instead of dynamic
+  branch: master
+  # branch: ${scm.git.branch}
+  revision:
+    name: ${scm.git.commit}
+    date: ${scm.git.commit.date}
+  properties:
+    # You get these values from your onboarding
+    # GROUP: <group>
+    # PSC_ID: <psc_id>
+  groups:
+  #  <group_name>: Administrator
+  # You get this value from your onboarding
+  # Please note: group attachment only works on project creation, so if you get it wrong you need to delete the project and try again,
+  #   alternatively use the GROUP: <group> property instead, automation is in place to fix the permissions every hour, on the :00 minute mark
+capture: # read more here: https://sig-docs.synopsys.com/polaris/topics/c_conf-capture.html
+# if you have javascript/typescript files, uncomment the following lines
+  # coverity:
+  #   buildless:
+  #     project:
+  #       languages:
+  #         - "javascript"
+  #         - "typescript"
+
+  build:
+    cleanCommands:
+    # change if your source code is not located in the "src" folder
+    - shell: [dotnet, clean, "src"]
+    buildCommands:
+    # change if your source code is not located in the "src" folder
+    - shell: [dotnet, build, "src"]
+analyze:
+  # if mode is local, then the results only gets partially submitted, the "Last snapshot submitted" doesn't get updated for some reason
+  #  this will lead to 300 points in the security maturity index, so please leave it as central
+  mode: central
+  coverity:
+    # This should increase the quality of the scan only available from Coverity 2021.01
+    usebudaforjavadotnet: enable
+
+    cov-analyze: [
+      "--disable-default",  # --disable-default - since this removes the quality checkers, they don't count towards the security maturity index, so no need to scan for them
+      "--webapp-security",  # --webapp-security - to enable web application security checkers again
+      "--security",         # --security - to enable whatever security checkers that are not web application related
+      "--disable", "CSRF"   # --disable CSRF - disable Cross Site Request Forgery, it has way too many false positives for it to be of much use
+      ]
+install:
+  coverity:
+    # This means the latest available version of Coverity
+    version: default
+serverUrl: https://visma.polaris.synopsys.com
