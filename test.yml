@@ -1,0 +1,23 @@
+"version": "1"
+"serverUrl": "https://visma.polaris.synopsys.com"
+"project":
+  "name": "test"
+  "branch": "master"
+  "revision":
+    "name": "${scm.git.commit}"
+    "date": "${scm.git.commit.date}"
+"install":
+  "coverity":
+    "version": "default"
+"capture":
+  "coverity":
+    "buildless":
+      "project":
+        "languages":
+        - "javascript"
+        - "typescript"
+"analyze":
+  "mode": "central"
+  "coverity":
+    "cov-analyze": ["--webapp-security", "--security", "--disable", "CSRF"]
+    "usebudaforjavadotnet": "enable"
